@@ -48,7 +48,7 @@ def create_user_tasks(
     return task
 
 
-def get_task(user_id: str, task_id: str, db: Session) -> models.Tasks | None:
+def get_task(user_id: str, task_id: str, db: Session) -> models.Tasks:
     return (
         db.query(models.Tasks)
         .filter(models.Tasks.user_id == user_id, models.Tasks.id == task_id)

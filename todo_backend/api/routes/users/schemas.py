@@ -23,23 +23,23 @@ class LoginResponse(BaseModel):
 
 class CreateUserTask(BaseModel):
     title: str = Field(max_length=255, min_length=3)
-    description: None | str
+    description: Optional[str]
 
 
 class UpdateUserTask(BaseModel):
-    title: str | None = Field(max_length=255, min_length=3, default=None)
-    description: None | str = Field(default=None)
-    status: int | None = Field(default=None)
+    title: Optional[str] = Field(max_length=255, min_length=3, default=None)
+    description: Optional[str] = Field(default=None)
+    status: Optional[int] = Field(default=None)
 
 
 class TasksListFilter(BaseModel):
-    status: int | None = None
+    status: Optional[int] = None
 
 
 class Tasks(BaseModel):
     id: str
     title: str
-    description: None | str
+    description: Optional[str]
     status: int
     created_at: datetime
     updated_at: datetime
