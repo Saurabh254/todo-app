@@ -1,17 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from fastapi_pagination import Page
 from sqlalchemy.orm import Session
 
-from api.database import db
-from typing import Annotated
-from . import errors, interface, schemas, models, enums
-from fastapi_pagination import Page
 from api.auth import auth
+from api.database import db
+
+from . import enums, errors, interface, models, schemas
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post("/login", response_model=schemas.LoginResponse)
-async def login(data: schemas.LoginUser, db: Session = Depends(db.get_db)):
+def login(data: schemas.LoginUser, db: Session = Depends(db.get_db)):
     try:
         if data.phone[-6:] == data.otp:
             return interface.user_login(phone=data.phone, db=db)
@@ -23,7 +25,7 @@ async def login(data: schemas.LoginUser, db: Session = Depends(db.get_db)):
 
 
 @router.get("/me", response_model=schemas.User)
-async def get_me(current_user: Annotated[models.Users, Depends(auth.get_current_user)]):
+def get_me(current_user: Annotated[models.Users, Depends(auth.get_current_user)]):
     return current_user
 
 
@@ -32,7 +34,7 @@ async def get_me(current_user: Annotated[models.Users, Depends(auth.get_current_
     status_code=status.HTTP_201_CREATED,
     response_model=schemas.Tasks,
 )
-async def create_task(
+def create_task(
     current_user: Annotated[models.Users, Depends(auth.get_current_user)],
     task: schemas.CreateUserTask,
     db: Session = Depends(db.get_db),
@@ -44,20 +46,21 @@ async def create_task(
 
 
 @router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_task(
+def delete_task(
     current_user: Annotated[models.Users, Depends(auth.get_current_user)],
     task_id: Annotated[str, Path(min_length=12, max_length=12)],
     db: Session = Depends(db.get_db),
 ):
     try:
         interface.delete_user_tasks(user=current_user, task_id=task_id, db=db)
-
+    except errors.TaskNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.patch("/tasks/{task_id}", response_model=schemas.Tasks)
-async def update_task(
+def update_task(
     current_user: Annotated[models.Users, Depends(auth.get_current_user)],
     task_id: Annotated[str, Path(min_length=12, max_length=12)],
     task: schemas.UpdateUserTask,
@@ -68,13 +71,15 @@ async def update_task(
         return interface.update_user_tasks(
             user=current_user, update_data=task, tasks_id=task_id, db=db
         )
+    except errors.TaskNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/tasks", response_model=Page[schemas.Tasks])
-async def get_all_tasks(
+def get_all_tasks(
     current_user: Annotated[models.Users, Depends(auth.get_current_user)],
     status: Annotated[enums.TaskStatus | None, Query()] = None,
     db: Session = Depends(db.get_db),

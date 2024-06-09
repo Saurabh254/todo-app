@@ -1,8 +1,9 @@
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 
-from fastapi_pagination.ext.sqlalchemy import paginate
-from . import errors, models, schemas, enums
-from api.auth import auth_bearer, auth
+from api.auth import auth, auth_bearer
+
+from . import enums, errors, models, schemas
 
 
 def create_user(phone: str, db: Session):

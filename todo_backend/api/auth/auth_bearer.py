@@ -1,11 +1,10 @@
 import time
+from datetime import datetime, timedelta, timezone
 
-from jose import jwt
+from dateutil import parser
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from datetime import datetime
-from datetime import timezone, timedelta
-from dateutil import parser
+from jose import jwt
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -28,7 +27,7 @@ class JWTBearer(HTTPBearer):
             payload_data = self.verify_jwt(credentials.credentials)
             if not payload_data:
                 raise HTTPException(
-                    status_code=403, detail="Invalid token or expired token."
+                    status_code=401, detail="Invalid token or expired token."
                 )
             return payload_data
         else:
