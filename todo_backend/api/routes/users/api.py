@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from api.auth import auth
 from api.database import db
 
-from . import enums, errors, interface, models, schemas
+from . import errors, interface, models, schemas
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -81,7 +81,7 @@ def update_task(
 @router.get("/tasks", response_model=Page[schemas.Tasks])
 def get_all_tasks(
     current_user: Annotated[models.Users, Depends(auth.get_current_user)],
-    status: Annotated[enums.TaskStatus | None, Query()] = None,
+    status: Annotated[int | None, Query(ge=0, le=3)] = None,
     db: Session = Depends(db.get_db),
 ):
     try:

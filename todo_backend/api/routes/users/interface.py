@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from api.auth import auth, auth_bearer
 
-from . import enums, errors, models, schemas
+from . import errors, models, schemas
 
 
 # Function to create a new user or retrieve an existing user by phone number
@@ -49,7 +49,7 @@ def create_user_tasks(
         user_id=user.id,
         title=task.title,
         description=task.description,
-        status=enums.TaskStatus.TODO.value,
+        status=task.status,
     )  # type: ignore
     db.add(task)
     db.commit()
