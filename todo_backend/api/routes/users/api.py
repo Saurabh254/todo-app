@@ -81,7 +81,7 @@ def update_task(
 @router.get("/tasks", response_model=Page[schemas.Tasks])
 def get_all_tasks(
     current_user: Annotated[models.Users, Depends(auth.get_current_user)],
-    status: Annotated[int | None, Query(ge=0, le=3)] = None,
+    status: Annotated[int | None, Query(ge=0, le=2)] = None,
     db: Session = Depends(db.get_db),
 ):
     try:

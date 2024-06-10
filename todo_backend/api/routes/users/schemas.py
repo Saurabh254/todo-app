@@ -24,13 +24,13 @@ class LoginResponse(BaseModel):
 class CreateUserTask(BaseModel):
     title: str = Field(max_length=255, min_length=3)
     description: Optional[str]
-    status: int = Field(ge=0, le=3, default=0)
+    status: int = Field(ge=0, le=2, default=0)
 
 
 class UpdateUserTask(BaseModel):
     title: Optional[str] = Field(max_length=255, min_length=3, default=None)
     description: Optional[str] = Field(default=None)
-    status: Optional[int] = Field(default=None, ge=0, le=3)
+    status: Optional[int] = Field(default=None, ge=0, le=2)
 
 
 class TasksListFilter(BaseModel):
