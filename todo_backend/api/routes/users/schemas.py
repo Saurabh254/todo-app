@@ -3,8 +3,6 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from . import enums
-
 
 class LoginUser(BaseModel):
     phone: str = Field(max_length=10, min_length=10)
