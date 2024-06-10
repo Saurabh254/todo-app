@@ -44,8 +44,9 @@ class JWTBearer(HTTPBearer):
 def decodeJWT(token: str) -> dict:
     try:
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        expiration = parser.parse(decoded_token["expiration"])
-        return decoded_token if expiration >= datetime.now() else None
+        # expiration = parser.parse(decoded_token["expiration"])
+        # return decoded_token if expiration >= datetime.now() else None
+        return decoded_token
     except Exception as e:
         return {}
 

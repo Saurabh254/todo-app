@@ -14,11 +14,10 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.post("/login", response_model=schemas.LoginResponse)
 def login(data: schemas.LoginUser, db: Session = Depends(db.get_db)):
+    if data.phone[-6:] != data.otp:
+        raise HTTPException(status_code=401, detail="wrong otp")
     try:
-        if data.phone[-6:] == data.otp:
-            return interface.user_login(phone=data.phone, db=db)
-        else:
-            raise HTTPException(status_code=401, detail="wrong otp")
+        return interface.user_login(phone=data.phone, db=db)
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
