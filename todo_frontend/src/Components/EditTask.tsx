@@ -1,63 +1,27 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { createTask } from "../api";
-import { TaskResponse } from "../type";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { updateTask } from "../api";
 import { log } from "./Logger";
 
-function AddNewTask() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("0");
-  const [titleError, setTitleError] = useState("");
-  const [descriptionError, setDescriptionError] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+function EditTask() {
+  const location = useLocation();
   const navigate = useNavigate();
+  const task = location.state.task;
 
-  const validateInputs = () => {
-    let isValid = true;
-    if (title.length < 3) {
-      setTitleError("Title must be at least 3 characters.");
-      isValid = false;
-    } else {
-      setTitleError("");
-    }
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description);
+  const [status, setStatus] = useState(String(task.status));
 
-    if (description.length < 5) {
-      setDescriptionError("Description must be at least 5 characters.");
-      isValid = false;
-    } else {
-      setDescriptionError("");
-    }
-
-    return isValid;
-  };
-
-  useEffect(() => {
-    if (submitted) {
-      validateInputs();
-    }
-  }, [title, description, submitted]);
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmitted(true); 
-    if (!validateInputs()) {
-      return;
-    }
-
-    try {
-      const numericStatus = parseInt(status, 10);
-      const responseData: TaskResponse = await createTask(
-        title,
-        description,
-        numericStatus
-      );
-      log("info", "Task created successfully:", responseData);
-      navigate("/listOfTasks");
-    } catch (error) {
-      log("error", "There was a problem with creating the task:", error);
-    }
-  };
+   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+     event.preventDefault();
+     try {
+       await updateTask(task.id, title, description, parseInt(status, 10));
+       log("info", "Task updated successfully");
+       navigate("/listOfTasks");
+     } catch (error) {
+       log("error", "There was a problem with the update operation:", error);
+     }
+   };
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
@@ -67,13 +31,6 @@ function AddNewTask() {
   const handleListOfTask = () => {
     navigate("/listOfTasks");
   };
-
-  const isDisabled =
-    !!titleError ||
-    !!descriptionError ||
-    title.length < 3 ||
-    description.length < 5;
-
   return (
     <div className="w-screen h-screen bg-white overflow-y-scroll">
       <div className="m-5 flex justify-between items-center">
@@ -81,10 +38,10 @@ function AddNewTask() {
           className="btn-sm bg-blue-500 text-white rounded"
           onClick={handleListOfTask}
         >
-          List Of Tasks
+          List Of Task
         </button>
         <div className="text-3xl font-bold text-gray-800 flex items-center justify-center">
-          Add New Task Page
+          <button>Edit Task Page</button>
         </div>
         <button
           className="btn-sm bg-red-500 text-white rounded"
@@ -96,9 +53,9 @@ function AddNewTask() {
 
       <div className="flex items-center justify-center mt-4">
         <div className="border shadow p-3 bg-white rounded pl-20 pr-20">
-          <div className="py-2">
+          <div className="flex items-center justify-center">
             <h2 className="text-3xl font-semibold text-gray-800">
-              Create a New Task
+              Edit The Task
             </h2>
           </div>
           <form className="flex flex-col" onSubmit={handleSubmit}>
@@ -108,30 +65,23 @@ function AddNewTask() {
             <input
               type="text"
               name="title"
-              placeholder="Enter the Title"
+              placeholder="Type here"
               className="p-2 border-gray-800 border rounded w-full max-w-xs bg-white text-black"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
-            {submitted && titleError && (
-              <div className="text-red-500 text-sm">{titleError}</div>
-            )}
-
             <label className="text-gray-800 font-medium py-2">
               Enter Description
             </label>
             <textarea
               name="description"
-              placeholder="Enter The Description"
-              className="p-2 border-gray-800 border rounded w-full max-w-xs bg-white text-black h-32"
+              placeholder="Description"
+              className="p-2 border-gray-800 border rounded w-full max-w-xs bg-white text-black"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={7}
               cols={50}
             ></textarea>
-            {submitted && descriptionError && (
-              <div className="text-red-500 text-sm">{descriptionError}</div>
-            )}
 
             <label className="text-gray-800 font-medium py-2">
               Select Status
@@ -149,7 +99,6 @@ function AddNewTask() {
             <button
               className="btn-sm w-20 mt-5 bg-blue-500 text-white rounded"
               type="submit"
-              disabled={isDisabled}
             >
               Submit
             </button>
@@ -160,4 +109,4 @@ function AddNewTask() {
   );
 }
 
-export default AddNewTask;
+export default EditTask;
