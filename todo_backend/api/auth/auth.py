@@ -7,10 +7,12 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from .auth_bearer import JWTBearer
+
 from api.database import db
 from api.routes.users import interface as users_interface
 from api.routes.users import models as users_model
+
+from .auth_bearer import JWTBearer
 
 # to get a string like this run:
 # openssl rand -hex 32

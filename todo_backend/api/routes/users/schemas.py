@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Optional
-from . import enums
+
 from pydantic import BaseModel, Field
+
+from . import enums
 
 
 class LoginUser(BaseModel):
