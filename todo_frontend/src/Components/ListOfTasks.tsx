@@ -15,23 +15,23 @@ const statusLabels: { [key: string]: string } = {
 function ListOfTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string>("all"); 
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const navigate = useNavigate();
 
- useEffect(() => {
-   const loadTasks = async () => {
-     try {
-       const fetchedTasks = await fetchTasks();
-       setTasks(fetchedTasks);
-       log("info", "Tasks fetched successfully:", fetchedTasks);
-     } catch (error) {
-       log("error", "There was a problem fetching tasks:", error); 
-       setError("Failed to load tasks.");
-     }
-   };
+  useEffect(() => {
+    const loadTasks = async () => {
+      try {
+        const fetchedTasks = await fetchTasks();
+        setTasks(fetchedTasks);
+        log("info", "Tasks fetched successfully:", fetchedTasks);
+      } catch (error) {
+        log("error", "There was a problem fetching tasks:", error);
+        setError("Failed to load tasks.");
+      }
+    };
 
-   loadTasks();
- }, []);
+    loadTasks();
+  }, []);
 
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedStatus(event.target.value);
@@ -46,16 +46,17 @@ function ListOfTasks() {
     navigate("/");
   };
 
-  const handleDelete = async (taskId: string) => {
-    try {
-      await deleteTask(taskId);
-      setTasks(tasks.filter((task) => task.id !== taskId));
-      console.log("Task deleted successfully:", taskId);
-    } catch (error) {
-      console.error("There was a problem with the delete operation:", error);
-      setError("Failed to delete the task.");
-    }
-  };
+const handleDelete = async (taskId: string) => {
+  try {
+    await deleteTask(taskId);
+    setTasks(tasks.filter((task) => task.id !== taskId));
+    log("info", "Task deleted successfully:", taskId); 
+  } catch (error) {
+    log("error", "There was a problem with the delete operation:", error);
+    setError("Failed to delete the task.");
+  }
+};
+
 
   const handleAddNewTask = () => {
     navigate("/addnewTask");
@@ -68,7 +69,7 @@ function ListOfTasks() {
 
   return (
     <div className="w-screen h-screen bg-white overflow-y-scroll">
-      <div className="m-5 flex justify-between items-center">
+      <div className="m-5 flex flex-col md:flex-row  justify-between items-center">
         <div>
           <select
             className="select select-bordered select-sm bg-white border border-gray-800 px-40  text-start rounded text-gray-800 pl-[8px]"
@@ -102,7 +103,7 @@ function ListOfTasks() {
       {error && <p className="text-red-500 text-center">{error}</p>}
       {filteredTasks.map((task, index) => (
         <div key={index} className="border rounded shadow bg-white p-4 m-5">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-col md:flex-row">
             <div>
               <h4 className="text-gray-700 font-semibold">
                 <span className="font-bold">Title :</span> {task.title}

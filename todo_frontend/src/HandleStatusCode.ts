@@ -16,7 +16,7 @@ export function APIERROR(error: AxiosError): never {
   const errorMessage = data.message || error.message;
 
   log("error", `HTTP ${statusCode}: ${errorMessage}`);
-  console.log("Error status code:", statusCode);
+  log("info", "Error status code:", statusCode);
 
   if (statusCode === 500) {
     showAlert("Authentication Failed");

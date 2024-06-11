@@ -1,15 +1,14 @@
 import axios from "axios";
 import { apiClient } from "./apiClient";
 import { APIERROR } from "./HandleStatusCode";
-export const API_URL = "http://192.168.1.44:8989/api/v1/users";
-import { TaskResponse , LoginResponse , Task} from "./type"; 
+export const API_URL = "https://todoapi.saurabhvishwakarma.in/api/v1/users";
+import { TaskResponse, LoginResponse, Task } from "./type";
 import { log } from "./Components/Logger";
-
 
 export async function createTask(
   title: string,
   description: string,
-  status: number,
+  status: number
 ): Promise<TaskResponse> {
   try {
     const response = await apiClient.post<TaskResponse>("/tasks/create_task", {
@@ -43,14 +42,14 @@ export async function login(
     });
 
     return response.data;
-  }catch (error: unknown) {
+  } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       APIERROR(error);
     } else {
       const errMsg =
         (error as Error).message ||
-        'An unknown error occurred during chat message fetching.';
-      log('error', errMsg);
+        "An unknown error occurred during chat message fetching.";
+      log("error", errMsg);
       throw new Error(errMsg);
     }
   }
@@ -77,7 +76,7 @@ export async function updateTask(
   taskId: string,
   title: string,
   description: string,
-  status: number 
+  status: number
 ): Promise<Task> {
   try {
     const response = await apiClient.patch<Task>(`/tasks/${taskId}`, {
@@ -99,12 +98,10 @@ export async function updateTask(
   }
 }
 
-
 export async function deleteTask(taskId: string): Promise<void> {
   try {
     const response = await apiClient.delete(`/tasks/${taskId}`);
     return response.data;
-
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       APIERROR(error);
@@ -119,16 +116,14 @@ export async function deleteTask(taskId: string): Promise<void> {
 }
 export async function fetchTasksByStatus(): Promise<Task[]> {
   try {
-    const response = await apiClient.get(
-      `/tasks?status=0&page=1&size=50`
-    );
-    return response.data; 
+    const response = await apiClient.get(`/tasks?status=0&page=1&size=50`);
+    return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error("Axios error fetching tasks:", error.message);
+      log("error", "Axios error fetching tasks:", error.message);
       throw new Error("Failed to fetch tasks due to network or server issue.");
     } else {
-      console.error("Unexpected error fetching tasks:", error);
+      log("error", "Unexpected error fetching tasks:", error);
       throw new Error("An unexpected error occurred while fetching tasks.");
     }
   }
