@@ -4,7 +4,7 @@ import { ACCESS_TOKEN_STORAGE_KEY } from "./constants";
 
 export const apiClient = applyCaseMiddleware(
   axios.create({
-    baseURL: "http://192.168.1.44:8989/api/v1/users",
+    baseURL: "http://localhost:8080/api/v1/users",
     headers: {
       Authorization: `Bearer ${ACCESS_TOKEN_STORAGE_KEY}`,
       "Content-Type": "application/json",
