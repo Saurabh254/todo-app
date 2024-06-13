@@ -19,3 +19,13 @@ export type ErrorAlertProps = {
   message: string;
   onDismiss: () => void;
 }
+export type AlertProps =  {
+  message: string;
+  type: "update" | "delete" | "add" | "statusChange" | "login" | "logout";
+}
+export type LogLevel = "log" | "debug" | "info" | "warn" | "error";
+export type LocationState = {
+  message: string;
+  showAlert: boolean;
+  type?: "update" | "delete" | "add" | "statusChange" | "login" | "logout";
+}

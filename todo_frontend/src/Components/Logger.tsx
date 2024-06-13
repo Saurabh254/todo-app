@@ -1,4 +1,4 @@
-export type LogLevel = "log" | "debug" | "info" | "warn" | "error";
+import { LogLevel } from "../type";
 
 export function log(
   level: LogLevel,
