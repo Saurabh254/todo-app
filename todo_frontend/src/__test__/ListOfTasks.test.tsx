@@ -1,7 +1,6 @@
-
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import ListOfTasks from "../Components/ListOfTasks";
+import ListOfTasks from "../Components/TaskLists";
 import { fetchTasks } from "../api";
 
 import { BrowserRouter } from "react-router-dom";
@@ -10,7 +9,7 @@ jest.mock("../api", () => ({
   fetchTasks: jest.fn(),
 }));
 jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"), 
+  ...jest.requireActual("react-router-dom"),
   useNavigate: () =>
     jest.fn().mockImplementation(() => ({
       navigate: jest.fn(),
@@ -25,7 +24,6 @@ describe("ListOfTasks Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (fetchTasks as jest.Mock).mockResolvedValue(tasks);
-     
   });
 
   it("handles task deletion", async () => {
@@ -42,7 +40,6 @@ describe("ListOfTasks Component", () => {
 
     const deleteButtons = screen.getAllByText("Delete");
     await user.click(deleteButtons[0]);
-
   });
 
   it("logs out and redirects correctly", async () => {
