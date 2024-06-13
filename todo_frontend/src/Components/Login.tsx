@@ -21,15 +21,15 @@ function Login() {
         setTimeout(() => setShowLogoutAlert(false), 3000);
       }
     }, [location]);
-  useEffect(() => {
-    const validatePhone = () => {
-      if (phone.length !== 10) {
-        setPhoneError("Enter a 10 digit phone number.");
-        return false;
-      }
-      setPhoneError("");
-      return true;
-    };
+    useEffect(() => {
+      const validatePhone = () => {
+        if (phone.length !== 10) {
+          setPhoneError("Enter a 10 digit phone number.");
+          return false;
+        }
+        setPhoneError("   ");
+        return true;
+      };
 
     const validateOTP = () => {
       if (otp.length !== 6) {
@@ -39,7 +39,7 @@ function Login() {
         setOtpError("Invalid OTP.");
         return false;
       }
-      setOtpError("");
+      setOtpError("   ");
       return true;
     };
 
@@ -67,9 +67,7 @@ function Login() {
 
   return (
     <div className="w-screen h-screen bg-[#f3f1f1]">
-      {showLogoutAlert && (
-        <Alert message="Logged out " type="logout" />
-      )}
+      {showLogoutAlert && <Alert message="Logged out " type="logout" />}
       <div className="text-4xl font-semibold text-gray-700 flex items-center justify-center pt-5">
         <div>
           <h1 className="text-2xl text-gray-700 font-bold pl-16">Welcome</h1>
@@ -95,11 +93,11 @@ function Login() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
-            {phoneError && (
-              <div className="text-red-500 text-xs">{phoneError}</div>
-            )}
+            <div className="text-red-500 text-xs h-2">
+              {phoneError && phoneError}
+            </div>
 
-            <label className="text-gray-800 font-medium py-2 text-sm">
+            <label className="text-gray-800 font-medium  text-sm py-2">
               Enter OTP
             </label>
             <input
@@ -110,7 +108,10 @@ function Login() {
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
             />
-            {otpError && <div className="text-red-500 text-xs">{otpError}</div>}
+            <div className="text-red-500 text-xs h-2">
+              {otpError && otpError}
+            </div>
+
 
             <button
               className={`text-xs w-16 mt-3 py-1.5 text-white rounded ${

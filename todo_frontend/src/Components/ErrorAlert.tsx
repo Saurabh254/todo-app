@@ -14,7 +14,7 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({ message, onDismiss }) => {
   return (
     <div
       role="alert"
-      className="alert alert-error fixed right-0 top-0 mt-4 mr-4  w-[30vw] flex items-center justify-center bg-orange-300 text-neutal p-4 shadow-lg z-50 animate-slide-in"
+      className="alert alert-error fixed right-0 top-0 mt-4 mr-6  w-[30vw] flex items-center justify-center bg-orange-300 text-neutal p-4 shadow-lg z-50 animate-slide-in"
     >
       <svg
         className="stroke-current shrink-0 h-6 w-6"

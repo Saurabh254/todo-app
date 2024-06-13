@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate , useLocation} from "react-router-dom";
-import { fetchTasks, deleteTask , updateTask } from "../api";
+import { useNavigate, useLocation } from "react-router-dom";
+import { fetchTasks, deleteTask, updateTask } from "../api";
 import { Task, LocationState } from "../type";
 import Alert from "./Alert";
 import "remixicon/fonts/remixicon.css";
 import { log } from "./Logger";
 import Layout from "./Layout";
-
 
 const statusLabels: { [key: string]: string } = {
   all: "All",
@@ -16,9 +15,9 @@ const statusLabels: { [key: string]: string } = {
 };
 
 const statusColor = {
-  "0": "bg-red-500", 
+  "0": "bg-gray-500",
   "1": "bg-yellow-500",
-  "2": "bg-green-500", 
+  "2": "bg-green-500",
 };
 
 function getStatusColor(statusCode: "0" | "1" | "2"): string {
@@ -28,23 +27,23 @@ function getStatusColor(statusCode: "0" | "1" | "2"): string {
 function ListOfTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
- const [buttonClicked, setButtonClicked] = useState<Record<string, boolean>>(
-   {}
- ); 
- const location = useLocation();
-   const [showAlert, setShowAlert] = useState(false);
-   const [alertMessage, setAlertMessage] = useState("");
+  const [buttonClicked, setButtonClicked] = useState<Record<string, boolean>>(
+    {}
+  );
+  const location = useLocation();
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
-   const [expanded, setExpanded] = useState<Record<string, boolean>>({}); 
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
   const [alertType, setAlertType] = useState<
     "update" | "delete" | "add" | "statusChange" | "login" | "logout"
   >("update");
-   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const customState = location.state as LocationState;
   useEffect(() => {
     const loadTasks = async () => {
-         setIsLoading(true);  
+      setIsLoading(true);
       try {
         const fetchedTasks = await fetchTasks();
         setTasks(fetchedTasks);
@@ -58,18 +57,18 @@ function ListOfTasks() {
 
     loadTasks();
   }, []);
- useEffect(() => {
-   if (customState?.showAlert) {
-     setShowAlert(true);
-     setAlertMessage(customState.message);
-     setAlertType(customState.type || "update");
-    
-     setTimeout(() => {
-       setShowAlert(false);
-       navigate(location.pathname, { replace: true, state: {} });
-     }, 3000);
-   }
- }, [location]);
+  useEffect(() => {
+    if (customState?.showAlert) {
+      setShowAlert(true);
+      setAlertMessage(customState.message);
+      setAlertType(customState.type || "update");
+
+      setTimeout(() => {
+        setShowAlert(false);
+        navigate(location.pathname, { replace: true, state: {} });
+      }, 3000);
+    }
+  }, [location]);
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedStatus(event.target.value);
   };
@@ -78,63 +77,61 @@ function ListOfTasks() {
     navigate("/editTask", { state: { task } });
   };
 
+  const handleCombinedClick = async (taskId: string) => {
+    setButtonClicked((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
+    setIsLoading(true);
 
- const handleCombinedClick = async (taskId: string) => {
-   setButtonClicked((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
-   setIsLoading(true);
+    setTimeout(async () => {
+      try {
+        await deleteTask(taskId);
+        setTasks(tasks.filter((task) => task.id !== taskId));
+        setAlertMessage("Task is Deleted");
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+        setAlertType("delete");
+        log("info", "Task deleted successfully:", taskId);
+      } catch (error) {
+        log("error", "There was a problem with the delete operation:", error);
+      } finally {
+        setIsLoading(false);
+        setButtonClicked((prev) => ({ ...prev, [taskId]: false }));
+      }
+    }, 1000);
+  };
+  const handleStatusChanges = async (taskId: string, newStatus: string) => {
+    setIsLoading(true);
+    const currentTask = tasks.find((task) => task.id === taskId);
+    if (!currentTask) {
+      log("error", "Task not found");
+      setIsLoading(false);
+      return;
+    }
 
-   setTimeout(async () => {
-     try {
-       await deleteTask(taskId);
-       setTasks(tasks.filter((task) => task.id !== taskId));
-       setAlertMessage("Task is Deleted");
-       setShowAlert(true);
-       setTimeout(() => setShowAlert(false), 3000);
-       setAlertType("delete");
-       log("info", "Task deleted successfully:", taskId);
-     } catch (error) {
-       log("error", "There was a problem with the delete operation:", error);
-     } finally {
-       setIsLoading(false); 
-       setButtonClicked((prev) => ({ ...prev, [taskId]: false }));
-     }
-
-   }, 1000); 
- };
-const handleStatusChanges = async (taskId: string, newStatus: string) => {
-  setIsLoading(true);
-  const currentTask = tasks.find((task) => task.id === taskId);
-  if (!currentTask) {
-    log("error", "Task not found");
-    setIsLoading(false);
-    return;
-  }
-
-  try {
-    const updatedTask = await updateTask(
-      taskId,
-      currentTask.title,
-      currentTask.description,
-      parseInt(newStatus)
-    );
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId
-          ? { ...task, status: newStatus as "0" | "1" | "2" }
-          : task
-      )
-    );
-       setAlertMessage("Status Changed");
-       setShowAlert(true);
-       setTimeout(() => setShowAlert(false), 3000);
-       setAlertType("statusChange");
-    log("info", "Task updated successfully:", updatedTask);
-  } catch (error) {
-    log("error", "Failed to update task status:", error);
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      const updatedTask = await updateTask(
+        taskId,
+        currentTask.title,
+        currentTask.description,
+        parseInt(newStatus)
+      );
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === taskId
+            ? { ...task, status: newStatus as "0" | "1" | "2" }
+            : task
+        )
+      );
+      setAlertMessage("Status Changed");
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
+      setAlertType("statusChange");
+      log("info", "Task updated successfully:", updatedTask);
+    } catch (error) {
+      log("error", "Failed to update task status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const handleAddNewTask = () => {
     navigate("/addnewTask");
   };
@@ -146,9 +143,8 @@ const handleStatusChanges = async (taskId: string, newStatus: string) => {
       ? tasks
       : tasks.filter((task) => String(task.status) === selectedStatus);
 
-
   return (
-    <div className="w-screen h-screen bg-[#f3f1f1] overflow-y-scroll flex flex-col relative">
+    <div className="w-screen h-screen bg-[#f3f1f1] overflow-y-scroll overflow-x-hidden flex flex-col relative">
       {isLoading && (
         <progress className="progress w-full absolute top-0"></progress>
       )}
@@ -168,107 +164,112 @@ const handleStatusChanges = async (taskId: string, newStatus: string) => {
           </div>
         </div>
       </div>
+      <div className="w-screen flex flex-col items-center justify-center ">
+        <div className=" w-[49vw] ">
+          <div className="w-full flex justify-between items-center">
+            <select
+              className="select select-bordered select-sm text-sm bg-white border border-gray-800   text-start rounded-lg text-gray-800 "
+              value={selectedStatus}
+              onChange={handleStatusChange}
+            >
+              <option value="all">All</option>
+              <option value="0">To Do</option>
+              <option value="1">In Progress</option>
+              <option value="2">Done</option>
+            </select>
+            <button
+              className="rounded-lg bg-blue-500 text-white opacity-80 font-medium pl-2 pr-2 py-1 text-sm "
+              onClick={handleAddNewTask}
+            >
+              Add Task.. <i className="ri-add-line text-md"></i>
+            </button>
+          </div>
+          <div className="w-full">
+            {filteredTasks.length === 0 ? (
+              <div className="flex justify-center items-center mt-10">
+                <h3 className="text-lg text-gray-600">
+                  There are no more tasks of this status. 
+                </h3>
+              </div>
+            ) : (
+              filteredTasks.map((task, index) => (
+                <div className="">
+                  <div
+                    key={index}
+                    className="border rounded-lg shadow bg-white   my-2  pr-3 pl-4 pt-2 pb-2"
+                  >
+                    <div className="flex flex-col md:flex-col relative">
+                      <div>
+                        <div className="flex justify-between items-center">
+                          <h4 className="text-gray-700 font-semibold text-lg">
+                            {task.title}
+                          </h4>
+                          <select
+                            className="select select-bordered select-sm text-xs bg-white border border-gray-800 text-start rounded-lg text-gray-800"
+                            value={task.status.toString()}
+                            onChange={(e) =>
+                              handleStatusChanges(task.id, e.target.value)
+                            }
+                          >
+                            <option value="0">To Do</option>
+                            <option value="1">In Progress</option>
+                            <option value="2">Done</option>
+                          </select>
+                        </div>
+                        <p className="text-gray-700 text-sm pt-2">
+                          {expanded[task.id]
+                            ? task.description
+                            : `${task.description
+                                .split(" ")
+                                .slice(0, 10)
+                                .join(" ")} `}
+                          {task.description.split(" ").length > 30 && (
+                            <button
+                              onClick={() => toggleDescription(task.id)}
+                              className="text-blue-600 text-xs"
+                            >
+                              {expanded[task.id]
+                                ? "Read less.."
+                                : "Read more.."}
+                            </button>
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex">
+                        <span
+                          className={` border border-0 border-gray-400 mt-2 text-white text-xs font-semibold rounded p-1 pl-2 pr-2 ${getStatusColor(
+                            task.status
+                          )}`}
+                        >
+                          {statusLabels[task.status]}
+                        </span>
+                        <div className="flex ml-auto">
+                          <button
+                            className="text-[#9e9ea7] text-xl mx-2"
+                            onClick={() => handleEdit(task)}
+                          >
+                            <i className="ri-edit-line"></i>
+                          </button>
 
-      <div className="items-center flex justify-between ml-[26vw] mt-5">
-        <div>
-          <select
-            className="select select-bordered select-sm text-sm bg-white border border-gray-800   text-start rounded-lg text-gray-800 ml-10"
-            value={selectedStatus}
-            onChange={handleStatusChange}
-          >
-            <option value="all">All</option>
-            <option value="0">To Do</option>
-            <option value="1">In Progress</option>
-            <option value="2">Done</option>
-          </select>
-          <button
-            className="rounded-lg bg-blue-500 text-white opacity-80 font-medium pl-2 pr-2 py-1 text-sm ml-80"
-            onClick={handleAddNewTask}
-          >
-            Add Task.. <i className="ri-add-line text-md"></i>
-          </button>
+                          <button
+                            key={task.id}
+                            className={`text-[#9e9ea7] ${
+                              buttonClicked[task.id] ? "text-2xl" : "text-xl"
+                            } mx-2`}
+                            onClick={() => handleCombinedClick(task.id)}
+                          >
+                            <i className="ri-delete-bin-line"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
-      {filteredTasks.length === 0 ? (
-        <div className="flex justify-center items-center mt-10">
-          <h3 className="text-lg text-gray-600">
-            There are no more tasks of this status.   Select Another
-          </h3>
-        </div>
-      ) : (
-        filteredTasks.map((task, index) => (
-          <div className="w-full items-center flex justify-center">
-            <div
-              key={index}
-              className="border rounded-lg shadow bg-white  lg:ml-4 ml-2 my-2 lg:w-[49vw] w-[75vw] pr-3 pl-4 pt-2 pb-2"
-            >
-              <div className="flex flex-col md:flex-col relative">
-                <div>
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-gray-700 font-semibold text-lg">
-                      {task.title}
-                    </h4>
-                    <select
-                      className="select select-bordered select-sm text-xs bg-white border border-gray-800 text-start rounded-lg text-gray-800"
-                      value={task.status.toString()}
-                      onChange={(e) =>
-                        handleStatusChanges(task.id, e.target.value)
-                      }
-                    >
-                      <option value="0">To Do</option>
-                      <option value="1">In Progress</option>
-                      <option value="2">Done</option>
-                    </select>
-                  </div>
-                  <p className="text-gray-700 text-sm pt-2">
-                    {expanded[task.id]
-                      ? task.description
-                      : `${task.description
-                          .split(" ")
-                          .slice(0, 10)
-                          .join(" ")} `}
-                    {task.description.split(" ").length > 30 && (
-                      <button
-                        onClick={() => toggleDescription(task.id)}
-                        className="text-blue-600 text-xs"
-                      >
-                        {expanded[task.id] ? "Read less.." : "Read more.."}
-                      </button>
-                    )}
-                  </p>
-                </div>
-                <div className="flex">
-                  <span
-                    className={` border border-0 border-gray-400 mt-2 text-white text-xs font-semibold rounded p-1 pl-2 pr-2 ${getStatusColor(
-                      task.status
-                    )}`}
-                  >
-                    {statusLabels[task.status]}
-                  </span>
-                  <div className="flex ml-auto">
-                    <button
-                      className="text-[#9e9ea7] text-xl mx-2"
-                      onClick={() => handleEdit(task)}
-                    >
-                      <i className="ri-edit-line"></i>
-                    </button>
-
-                    <button
-                      key={task.id}
-                      className={`text-[#9e9ea7] ${
-                        buttonClicked[task.id] ? "text-2xl" : "text-xl"
-                      } mx-2`}
-                      onClick={() => handleCombinedClick(task.id)}
-                    >
-                      <i className="ri-delete-bin-line"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))
-      )}
     </div>
   );
 }
