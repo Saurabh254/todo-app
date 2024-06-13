@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 import { login } from "../api";
 import { LoginResponse } from "../type";
 import { log } from "./Logger";
+import Alert from "./Alert";
 
 function Login() {
   const [phone, setPhone] = useState("");
@@ -11,11 +12,19 @@ function Login() {
   const [otpError, setOtpError] = useState("");
   const [isValid, setIsValid] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showLogoutAlert, setShowLogoutAlert] = useState(false);
 
+    useEffect(() => {
+      if (location.state?.logoutSuccess) {
+        setShowLogoutAlert(true);
+        setTimeout(() => setShowLogoutAlert(false), 3000);
+      }
+    }, [location]);
   useEffect(() => {
     const validatePhone = () => {
       if (phone.length !== 10) {
-        setPhoneError("Please enter a 10-digit phone number.");
+        setPhoneError("Enter a 10 digit phone number.");
         return false;
       }
       setPhoneError("");
@@ -47,7 +56,10 @@ function Login() {
       const responseData: LoginResponse = await login(phone, otp);
       log("info", "Login successful:", responseData);
       localStorage.setItem("accessToken", responseData.accessToken);
-      navigate("/listOfTasks");
+      navigate("/listOfTasks", {
+        state: { message: "Login", showAlert: true, type: "login" },
+      });
+
     } catch (error) {
       log("error", "There was a problem with the login operation:", error);
     }
@@ -55,6 +67,9 @@ function Login() {
 
   return (
     <div className="w-screen h-screen bg-[#f3f1f1]">
+      {showLogoutAlert && (
+        <Alert message="Logged out " type="logout" />
+      )}
       <div className="text-4xl font-semibold text-gray-700 flex items-center justify-center pt-5">
         <div>
           <h1 className="text-2xl text-gray-700 font-bold pl-16">Welcome</h1>
@@ -81,7 +96,7 @@ function Login() {
               onChange={(e) => setPhone(e.target.value)}
             />
             {phoneError && (
-              <div className="text-red-500 text-sm">{phoneError}</div>
+              <div className="text-red-500 text-xs">{phoneError}</div>
             )}
 
             <label className="text-gray-800 font-medium py-2 text-sm">
@@ -95,7 +110,7 @@ function Login() {
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
             />
-            {otpError && <div className="text-red-500 text-sm">{otpError}</div>}
+            {otpError && <div className="text-red-500 text-xs">{otpError}</div>}
 
             <button
               className={`text-xs w-16 mt-3 py-1.5 text-white rounded ${

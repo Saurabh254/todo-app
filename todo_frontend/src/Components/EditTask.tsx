@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { updateTask } from "../api";
 import { log } from "./Logger";
+import Layout from "./Layout";
 
 function EditTask() {
   const location = useLocation();
   const navigate = useNavigate();
   const task = location.state.task;
-
+  
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
   const [status, setStatus] = useState(String(task.status));
@@ -18,56 +19,37 @@ function EditTask() {
      setIsLoading(true); 
      try {
        await updateTask(task.id, title, description, parseInt(status, 10));
+       
        log("info", "Task updated successfully");
-       navigate("/listOfTasks");
+       navigate("/listOfTasks", {
+         state: {
+           message: "Task Updated Successfully",
+           showAlert: true,
+           type: "update",
+         },
+       });
      } catch (error) {
        log("error", "There was a problem with the update operation:", error);
      } finally {
        setIsLoading(false); 
      }
    };
+   
+   
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    navigate("/");
-  };
-
-  const handleListOfTask = () => {
-    navigate("/listOfTasks");
-  };
+ 
   return (
-    <div className="w-screen h-screen bg-white overflow-y-scroll">
+    <div className="w-screen h-screen bg-[#f3f1f1] overflow-y-scroll">
+      <Layout />
       {isLoading && (
         <progress className="progress w-full absolute top-0"></progress>
       )}
-      <div className="m-5 flex justify-between items-center ml-[40vw]">
-        <div>
-          <h1 className="text-2xl text-gray-700 font-bold pl-9">
-            Welcome back,
-          </h1>
-          <p className="text-sm text-gray-700 font-semibold">
-            Please , Edit Your Task for the completion{" "}
-          </p>
-        </div>
 
-        <div>
-          <button
-            className="btn-sm bg-gray-500 font-semibold text-white rounded mx-2"
-            onClick={handleListOfTask}
-          >
-            List Of Tasks
-          </button>
-          <button
-            className="btn-sm bg-red-500 text-white rounded mx-2"
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-center mt-4">
-        <div className="border shadow p-3 bg-white rounded pl-20 pr-20 ml-8">
+      <div className="flex flex-col items-center justify-center mt-4">
+        <p className="text-md text-gray-700 font-semibold">
+          Please , Edit Your Task for the completion{" "}
+        </p>
+        <div className="border shadow p-3 bg-white rounded pl-20 pr-20  mt-4">
           <div className="">
             <h2 className="text-lg text-gray-800 font-semibold">
               Edit Title , Description , Status
@@ -112,9 +94,8 @@ function EditTask() {
             </select>
 
             <button
-              className="text-sm  w-16 mt-3 py-1 bg-green-500  text-white rounded"
+              className="text-sm  w-16 mt-3 py-1 bg-blue-500  text-white rounded"
               type="submit"
-         
             >
               Edit
             </button>

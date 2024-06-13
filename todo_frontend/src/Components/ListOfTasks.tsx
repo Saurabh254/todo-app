@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { fetchTasks, deleteTask } from "../api";
-import { Task } from "../type";
+import { useNavigate , useLocation} from "react-router-dom";
+import { fetchTasks, deleteTask , updateTask } from "../api";
+import { Task, LocationState } from "../type";
+import Alert from "./Alert";
 import "remixicon/fonts/remixicon.css";
 import { log } from "./Logger";
+import Layout from "./Layout";
+
 
 const statusLabels: { [key: string]: string } = {
   all: "All",
@@ -28,11 +31,17 @@ function ListOfTasks() {
  const [buttonClicked, setButtonClicked] = useState<Record<string, boolean>>(
    {}
  ); 
+ const location = useLocation();
+   const [showAlert, setShowAlert] = useState(false);
+   const [alertMessage, setAlertMessage] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
    const [expanded, setExpanded] = useState<Record<string, boolean>>({}); 
   const navigate = useNavigate();
+  const [alertType, setAlertType] = useState<
+    "update" | "delete" | "add" | "statusChange" | "login" | "logout"
+  >("update");
    const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  const customState = location.state as LocationState;
   useEffect(() => {
     const loadTasks = async () => {
          setIsLoading(true);  
@@ -49,7 +58,18 @@ function ListOfTasks() {
 
     loadTasks();
   }, []);
-
+ useEffect(() => {
+   if (customState?.showAlert) {
+     setShowAlert(true);
+     setAlertMessage(customState.message);
+     setAlertType(customState.type || "update");
+    
+     setTimeout(() => {
+       setShowAlert(false);
+       navigate(location.pathname, { replace: true, state: {} });
+     }, 3000);
+   }
+ }, [location]);
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedStatus(event.target.value);
   };
@@ -58,10 +78,7 @@ function ListOfTasks() {
     navigate("/editTask", { state: { task } });
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    navigate("/");
-  };
+
  const handleCombinedClick = async (taskId: string) => {
    setButtonClicked((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
    setIsLoading(true);
@@ -70,6 +87,10 @@ function ListOfTasks() {
      try {
        await deleteTask(taskId);
        setTasks(tasks.filter((task) => task.id !== taskId));
+       setAlertMessage("Task is Deleted");
+       setShowAlert(true);
+       setTimeout(() => setShowAlert(false), 3000);
+       setAlertType("delete");
        log("info", "Task deleted successfully:", taskId);
      } catch (error) {
        log("error", "There was a problem with the delete operation:", error);
@@ -80,18 +101,50 @@ function ListOfTasks() {
 
    }, 1000); 
  };
+const handleStatusChanges = async (taskId: string, newStatus: string) => {
+  setIsLoading(true);
+  const currentTask = tasks.find((task) => task.id === taskId);
+  if (!currentTask) {
+    log("error", "Task not found");
+    setIsLoading(false);
+    return;
+  }
 
-
+  try {
+    const updatedTask = await updateTask(
+      taskId,
+      currentTask.title,
+      currentTask.description,
+      parseInt(newStatus)
+    );
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId
+          ? { ...task, status: newStatus as "0" | "1" | "2" }
+          : task
+      )
+    );
+       setAlertMessage("Status Changed");
+       setShowAlert(true);
+       setTimeout(() => setShowAlert(false), 3000);
+       setAlertType("statusChange");
+    log("info", "Task updated successfully:", updatedTask);
+  } catch (error) {
+    log("error", "Failed to update task status:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleAddNewTask = () => {
     navigate("/addnewTask");
   };
   const toggleDescription = (taskId: string) => {
     setExpanded((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
   };
-const filteredTasks =
-  selectedStatus === "all"
-    ? tasks
-    : tasks.filter((task) => String(task.status) === selectedStatus);
+  const filteredTasks =
+    selectedStatus === "all"
+      ? tasks
+      : tasks.filter((task) => String(task.status) === selectedStatus);
 
 
   return (
@@ -99,47 +152,27 @@ const filteredTasks =
       {isLoading && (
         <progress className="progress w-full absolute top-0"></progress>
       )}
-      <div className="m-5 flex flex-col md:flex-row justify-between items-center lg:w-[96%] w-0  h-80 lg:h-10 ">
+      {showAlert && <Alert message={alertMessage} type={alertType} />}
+      <Layout />
+      <div className="flex flex-col  justify-between items-center ">
         <div>
-          <div className="pl-72 lg:pl-[38vw] relative">
+          <div>
             <h1 className="text-xl lg:text-2xl text-gray-700 font-bold w-64 lg:pl-16">
               Welcome back,
             </h1>
-            <button
-              className=" bg-red-500 text-white rounded  ml-64 block lg:hidden p-0.5 absolute top-0 right-0"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+
             <p className="text-sm text-gray-700 lg:pl-2 font-semibold">
               You've got {filteredTasks.length} tasks coming up in the next
               days.{" "}
             </p>
           </div>
         </div>
-
-        <div className="w-1/4 flex hidden lg:block">
-          <button
-            className="btn-sm bg-red-500 text-white rounded font-semibold ml-64"
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </div>
       </div>
 
-      <div className=" items-center flex justify-between lg:w-[49vw] ml-[25vw]">
+      <div className="items-center flex justify-between ml-[26vw] mt-5">
         <div>
-          <button
-            className="btn-sm rounded-lg bg-gray-500 text-white opacity-80 font-medium lg:mx-2 hidden lg:block "
-            onClick={handleAddNewTask}
-          >
-            Add Task.. <i className="ri-add-line text-md"></i>
-          </button>
-        </div>
-        <div className="">
           <select
-            className="select select-bordered select-sm text-sm bg-white border border-gray-800   text-start rounded-lg text-gray-800 "
+            className="select select-bordered select-sm text-sm bg-white border border-gray-800   text-start rounded-lg text-gray-800 ml-10"
             value={selectedStatus}
             onChange={handleStatusChange}
           >
@@ -148,65 +181,94 @@ const filteredTasks =
             <option value="1">In Progress</option>
             <option value="2">Done</option>
           </select>
+          <button
+            className="rounded-lg bg-blue-500 text-white opacity-80 font-medium pl-2 pr-2 py-1 text-sm ml-80"
+            onClick={handleAddNewTask}
+          >
+            Add Task.. <i className="ri-add-line text-md"></i>
+          </button>
         </div>
       </div>
-      {filteredTasks.map((task, index) => (
-        <div className="w-full items-center flex justify-center">
-          <div
-            key={index}
-            className="border rounded-lg shadow bg-white  lg:ml-4 ml-2 my-2 lg:w-[49vw] w-[75vw] pr-3 pl-4 pt-2 pb-2"
-          >
-            <div className="flex flex-col md:flex-col">
-              <div>
-                <h4 className="text-gray-700 font-semibold text-lg">
-                  {task.title}
-                </h4>
-                <p className="text-gray-700 text-sm pt-2">
-                  {expanded[task.id]
-                    ? task.description
-                    : `${task.description.split(" ").slice(0, 10).join(" ")} `}
-                  {task.description.split(" ").length > 30 && (
-                    <button
-                      onClick={() => toggleDescription(task.id)}
-                      className="text-blue-600 text-xs"
+      {filteredTasks.length === 0 ? (
+        <div className="flex justify-center items-center mt-10">
+          <h3 className="text-lg text-gray-600">
+            There are no more tasks of this status.   Select Another
+          </h3>
+        </div>
+      ) : (
+        filteredTasks.map((task, index) => (
+          <div className="w-full items-center flex justify-center">
+            <div
+              key={index}
+              className="border rounded-lg shadow bg-white  lg:ml-4 ml-2 my-2 lg:w-[49vw] w-[75vw] pr-3 pl-4 pt-2 pb-2"
+            >
+              <div className="flex flex-col md:flex-col relative">
+                <div>
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-gray-700 font-semibold text-lg">
+                      {task.title}
+                    </h4>
+                    <select
+                      className="select select-bordered select-sm text-xs bg-white border border-gray-800 text-start rounded-lg text-gray-800"
+                      value={task.status.toString()}
+                      onChange={(e) =>
+                        handleStatusChanges(task.id, e.target.value)
+                      }
                     >
-                      {expanded[task.id] ? "Read less.." : "Read more.."}
+                      <option value="0">To Do</option>
+                      <option value="1">In Progress</option>
+                      <option value="2">Done</option>
+                    </select>
+                  </div>
+                  <p className="text-gray-700 text-sm pt-2">
+                    {expanded[task.id]
+                      ? task.description
+                      : `${task.description
+                          .split(" ")
+                          .slice(0, 10)
+                          .join(" ")} `}
+                    {task.description.split(" ").length > 30 && (
+                      <button
+                        onClick={() => toggleDescription(task.id)}
+                        className="text-blue-600 text-xs"
+                      >
+                        {expanded[task.id] ? "Read less.." : "Read more.."}
+                      </button>
+                    )}
+                  </p>
+                </div>
+                <div className="flex">
+                  <span
+                    className={` border border-0 border-gray-400 mt-2 text-white text-xs font-semibold rounded p-1 pl-2 pr-2 ${getStatusColor(
+                      task.status
+                    )}`}
+                  >
+                    {statusLabels[task.status]}
+                  </span>
+                  <div className="flex ml-auto">
+                    <button
+                      className="text-[#9e9ea7] text-xl mx-2"
+                      onClick={() => handleEdit(task)}
+                    >
+                      <i className="ri-edit-line"></i>
                     </button>
-                  )}
-                </p>
-              </div>
-              <div className="flex">
-                <button
-                  className={` border border-0 border-gray-400 mt-2 text-white text-xs font-semibold rounded p-1 pl-2 pr-2 ${getStatusColor(
-                    task.status
-                  )}`}
-                  type="button"
-                >
-                  {statusLabels[task.status]}
-                </button>
-                <div className="flex ml-auto">
-                  <button
-                    className="text-[#9e9ea7] text-xl mx-2"
-                    onClick={() => handleEdit(task)}
-                  >
-                    <i className="ri-edit-line"></i>
-                  </button>
 
-                  <button
-                    key={task.id}
-                    className={`text-[#9e9ea7] ${
-                      buttonClicked[task.id] ? "text-2xl" : "text-xl"
-                    } mx-2`}
-                    onClick={() => handleCombinedClick(task.id)}
-                  >
-                    <i className="ri-delete-bin-line"></i>
-                  </button>
+                    <button
+                      key={task.id}
+                      className={`text-[#9e9ea7] ${
+                        buttonClicked[task.id] ? "text-2xl" : "text-xl"
+                      } mx-2`}
+                      onClick={() => handleCombinedClick(task.id)}
+                    >
+                      <i className="ri-delete-bin-line"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 }

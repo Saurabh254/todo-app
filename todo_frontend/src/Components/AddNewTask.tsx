@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createTask } from "../api";
 import { TaskResponse } from "../type";
 import { log } from "./Logger";
+import Layout from "./Layout";
 
 function AddNewTask() {
   const [title, setTitle] = useState("");
@@ -12,12 +13,8 @@ function AddNewTask() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
- 
-
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-   
    
      setIsLoading(true);
 
@@ -29,7 +26,9 @@ function AddNewTask() {
         numericStatus
       );
       log("info", "Task created successfully:", responseData);
-      navigate("/listOfTasks");
+      navigate("/listOfTasks", {
+        state: { message: "New Task Added", showAlert: true, type: "add" },
+      });
     } catch (error) {
       log("error", "There was a problem with creating the task:", error);
     } finally {
@@ -37,52 +36,21 @@ function AddNewTask() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    navigate("/");
-  };
-
-  const handleListOfTask = () => {
-    navigate("/listOfTasks");
-  };
-
-  
-
   return (
-    <div className="w-screen h-screen bg-white overflow-y-scroll">
+    <div className="w-screen h-screen bg-[#f3f1f1] overflow-y-scroll">
+      <Layout />
       {isLoading && (
         <progress className="progress w-full absolute top-0"></progress>
       )}
-      <div className="m-5 flex justify-between items-center lg:ml-[40vw]">
-        <div>
-          <h1 className="text-2xl text-gray-700 font-bold pl-12">
-            Welcome back,
-          </h1>
-          <p className="text-sm text-gray-700 font-semibold">
-            Please , Assign a new Task for the completion{" "}
-          </p>
-        </div>
-       
-        <div>
-          <button
-            className="btn-sm bg-gray-500 font-semibold text-white rounded mx-2"
-            onClick={handleListOfTask}
-          >
-            List Of Tasks
-          </button>
-          <button
-            className="btn-sm bg-red-500 text-white rounded mx-2"
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </div>
-      </div>
 
-      <div className="flex items-center justify-center mt-4">
-        <div className="border shadow p-3 bg-white rounded pl-20 pr-20 ml-12">
+      <div className="flex  flex-col items-center justify-center mt-4">
+        <p className="text-gray-700 font-semibold text-md ">
+          Please Create A New Task{" "}
+        </p>
+
+        <div className="border shadow p-3 bg-white rounded pl-20 pr-20  mt-2">
           <div className="py-2">
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800">
               Create a New Task
             </h2>
           </div>
@@ -98,7 +66,6 @@ function AddNewTask() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
-           
 
             <label className="text-gray-800 font-medium py-2 text-sm">
               Enter Description
@@ -112,7 +79,6 @@ function AddNewTask() {
               rows={7}
               cols={50}
             ></textarea>
-           
 
             <label className="text-gray-800 font-medium py-2 text-sm">
               Select Status
@@ -128,9 +94,8 @@ function AddNewTask() {
             </select>
 
             <button
-              className="text-xs  w-20 mt-3 py-1.5 bg-gray-500  text-white rounded"
+              className="text-xs  w-20 mt-3 py-1.5 bg-blue-500  text-white rounded"
               type="submit"
-             
             >
               Add Task
             </button>
