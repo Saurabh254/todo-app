@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import ListOfTasks from "../Components/TaskLists";
+import TaskLists from "../Components/TaskLists";
 import { fetchTasks } from "../api";
 
 import { BrowserRouter } from "react-router-dom";
@@ -30,7 +30,7 @@ describe("ListOfTasks Component", () => {
     const user = userEvent.setup();
     render(
       <BrowserRouter>
-        <ListOfTasks />
+        <TaskLists />
       </BrowserRouter>
     );
 
@@ -46,7 +46,7 @@ describe("ListOfTasks Component", () => {
     const user = userEvent.setup();
     render(
       <BrowserRouter>
-        <ListOfTasks />
+        <TaskLists />
       </BrowserRouter>
     );
     const logoutButton = screen.getByText("Logout");

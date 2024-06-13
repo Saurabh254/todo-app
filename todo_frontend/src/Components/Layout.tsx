@@ -10,7 +10,7 @@ function Layout() {
   };
 
   return (
-    <div className="w-full flex items-center p-4">
+    <div className="w-full flex items-center p-4 ">
       <button
         className="btn-sm bg-red-500 text-white rounded ml-auto "
         onClick={handleLogout}

@@ -85,7 +85,7 @@ function TaskLists() {
       try {
         await deleteTask(taskId);
         setTasks(tasks.filter((task) => task.id !== taskId));
-        setAlertMessage("Task is Deleted");
+        setAlertMessage("Task Deleted Successfully");
         setShowAlert(true);
         setTimeout(() => setShowAlert(false), 3000);
         setAlertType("delete");
@@ -121,7 +121,7 @@ function TaskLists() {
             : task
         )
       );
-      setAlertMessage("Status Changed");
+      setAlertMessage("Status Changed Succesfully");
       setShowAlert(true);
       setTimeout(() => setShowAlert(false), 3000);
       setAlertType("statusChange");
@@ -165,7 +165,7 @@ function TaskLists() {
         </div>
       </div>
       <div className="w-screen flex flex-col items-center justify-center ">
-        <div className=" w-[49vw] ">
+        <div className=" w-[50vw] ">
           <div className="w-full flex justify-between items-center">
             <select
               className="select select-bordered select-sm text-sm bg-white border border-gray-800   text-start rounded-lg text-gray-800 "
