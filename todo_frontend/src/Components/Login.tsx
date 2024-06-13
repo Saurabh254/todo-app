@@ -25,7 +25,7 @@ function Login() {
     }, [location]);
    useEffect(() => {
      const validatePhone = () => {
-       if (!phoneFocused) return true;
+       if (!phoneFocused) return false;
        if (phone.length !== 10) {
          setPhoneError("Enter a 10 digit phone number.");
          return false;
@@ -35,7 +35,7 @@ function Login() {
      };
 
      const validateOTP = () => {
-       if (!otpFocused) return true;
+       if (!otpFocused) return false;
        if (otp.length !== 6) {
          setOtpError("Please enter a 6-digit OTP.");
          return false;

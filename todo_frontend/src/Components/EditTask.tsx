@@ -99,7 +99,7 @@ function EditTask() {
                 className="text-sm  w-16 mt-3 py-1 bg-blue-500  text-white rounded"
                 type="submit"
               >
-                Edit
+                Save
               </button>
             </form>
           </div>
