@@ -24,7 +24,7 @@ function getStatusColor(statusCode: "0" | "1" | "2"): string {
   return statusColor[statusCode] || "bg-gray-500";
 }
 
-function ListOfTasks() {
+function TaskLists() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   const [buttonClicked, setButtonClicked] = useState<Record<string, boolean>>(
@@ -274,4 +274,4 @@ function ListOfTasks() {
   );
 }
 
-export default ListOfTasks;
+export default TaskLists;

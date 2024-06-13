@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import AddNewTask from "./Components/AddNewTask";
 import Login from "./Components/Login";
-import ListOfTasks from "./Components/ListOfTasks";
+import TaskLists from "./Components/TaskLists";
 import EditTask from "./Components/EditTask";
 import ProtectedRoute from "./Components/Protected";
 
@@ -22,7 +22,7 @@ function App() {
           path="/listOfTasks"
           element={
             <ProtectedRoute>
-              <ListOfTasks />
+              <TaskLists />
             </ProtectedRoute>
           }
         />
